@@ -6,6 +6,7 @@ import kivi_parser
 from mathutils import Matrix, Euler, Vector
 
 # CHANGE THIS TO YOUR CAMERA OFFSET. FOR SOME REASON I DIDN'T INCLUDE THIS IN THE KIVI RECORDING FILES
+# USUALLY GUESSING A ROUGH VALUE WORKS WELL ENOUGH (I THINK)
 loc_offset: Vector = Vector((0, 0, 0.147))
 rot_offset: Vector = Vector((-90, 0, 180))
 scale: Vector = Vector((1, 1, 1))
@@ -64,20 +65,18 @@ def add_pose(target, mat):
     target.keyframe_insert('scale')
 
 
-# test
-camera = bpy.data.objects.get("Camera")
+def import_file(filename, target):
+    file_info, file_content = kivi_parser.parse(filename)
+    print(file_info)
+    set_scene_settings(file_info)
+    target.animation_data_clear()
 
-filename = "D:\\Code_Projects\\Python\\BlenderKiviImporter\\script1_scene3-exit_shot5.mrec"
-file_info, file_content = kivi_parser.parse(filename)
-set_scene_settings(file_info)
-
-for frame_index, content in enumerate(file_content):
-    # In Blender, anim start at 1
-    bpy.context.scene.frame_set(frame_index + 1)
-    if isinstance(content, kivi_parser.Pose):
-        # Pose
-        add_pose(camera, content.matrix)
-    elif isinstance(content, kivi_parser.Event):
-        # Event
-        bpy.context.scene.timeline_markers.new(content.event_type, frame=frame_index+1)
-
+    for frame_index, content in enumerate(file_content):
+        # In Blender, anim start at 1
+        bpy.context.scene.frame_set(frame_index + 1)
+        if isinstance(content, kivi_parser.Pose):
+            # Pose
+            add_pose(target, content.matrix)
+        elif isinstance(content, kivi_parser.Event):
+            # Event
+            bpy.context.scene.timeline_markers.new(content.event_type, frame=frame_index + 1)
