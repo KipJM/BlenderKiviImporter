@@ -1,9 +1,9 @@
-import bpy, bpy_extras
 import math
 
-from mathutils import Matrix, Euler, Vector
-
+import bpy
+import bpy_extras
 import kivi_parser
+from mathutils import Matrix, Euler, Vector
 
 # CHANGE THIS TO YOUR CAMERA OFFSET. FOR SOME REASON I DIDN'T INCLUDE THIS IN THE KIVI RECORDING FILES
 loc_offset: Vector = Vector((0, 0, 0.147))
@@ -65,14 +65,19 @@ def add_pose(target, mat):
 
 
 # test
-camera = bpy.context.objects.get("Camera")
+camera = bpy.data.objects.get("Camera")
 
 filename = "D:\\Code_Projects\\Python\\BlenderKiviImporter\\script1_scene3-exit_shot5.mrec"
 file_info, file_content = kivi_parser.parse(filename)
 set_scene_settings(file_info)
 
 for frame_index, content in enumerate(file_content):
+    # In Blender, anim start at 1
+    bpy.context.scene.frame_set(frame_index + 1)
     if isinstance(content, kivi_parser.Pose):
-        pass
+        # Pose
+        add_pose(camera, content.matrix)
     elif isinstance(content, kivi_parser.Event):
-        pass
+        # Event
+        bpy.context.scene.timeline_markers.new(content.event_type, frame=frame_index+1)
+
